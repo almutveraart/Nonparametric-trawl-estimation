@@ -1,8 +1,9 @@
 ---
 title: "Empirical study for article"
 author: "Orimar Sauri and Almut Veraart"
-date: "20/04/2022"
+date: "21/04/2022"
 output: html_document
+
 ---
 
 ```{r setup, include=FALSE}
@@ -674,6 +675,8 @@ my_Delta <-1/12#sampling in 5s=1/12 min
 
 hrange <- 20
 noos <- n-is_length-hrange #=941 for is_length=3000
+
+#noos <- 4
 #Create forecast matrices:
 CondMean_p <-matrix(0, nrow=noos, ncol=hrange)
 CondMean_IV_p <-matrix(0, nrow=noos, ncol=hrange)
@@ -683,6 +686,13 @@ ActualValues <- matrix(0, nrow=noos, ncol=hrange)
 Weight_Intersection_p <- matrix(0, nrow=noos, ncol=hrange)
 Weight_SetDifference_p <- matrix(0, nrow=noos, ncol=hrange)
 
+parvec_alpha <-numeric(noos)
+parvec_H <- numeric(noos)
+parvec_theta <- numeric(noos)
+parvev_m <- numeric(noos)
+parvec_mtilde <-numeric(noos)
+parvec_c <- numeric(noos)
+parvec_lebA <-numeric(noos)
 
 for(tau in 1:noos){
 #tau<-1
@@ -712,6 +722,14 @@ for(tau in 1:noos){
   my_c <- my_theta*my_m/(1-my_theta)^2
 
   lebA_fc <-lebA_fc_c1*my_c
+  
+  parvec_alpha[tau] <-my_alpha
+  parvec_H[tau] <- my_H
+  parvec_theta[tau] <- my_theta
+  parvev_m[tau] <- my_m
+  parvec_mtilde[tau] <-my_mtilde
+  parvec_c[tau] <- my_c
+  parvec_lebA[tau] <-lebA_fc
 
   for(h in 1:hrange){ #forecasting horizon loop in 1:hrange
 #h<-1
@@ -750,7 +768,26 @@ for(tau in 1:noos){
 
 ```
 
+We briefly consider the parameter estimates for the forecasting exercise:
+
+```{r}
+boxplot(parvec_alpha)
+boxplot(parvec_H)
+
+boxplot(parvec_theta)
+boxplot(parvev_m)
+
+boxplot(parvec_mtilde)
+boxplot(parvec_c)
+
+boxplot(parvec_lebA)
+#par(mfrow=c(1,1))
+```
+
+
+
 Next we compute the error measures:
+
 ```{r}
 
 #Computing the error measures
@@ -795,4 +832,43 @@ print(CondMean_p_MSE/CondMean_MSE)
 
 ```
  
+ 
+ 
+```{r}
+plot(x[(is_length+1):n],type="l")
+#lines(CondMean[,1])
+lines(CondMean[,1],col="red")
+lines(NaiveFC[,1],col="blue")
+
+lines(CondMean_p[,1],col="brown")
+
+
+plot(x[(is_length+1):((is_length+1)+100)],type="l")
+#lines(CondMean[1:100,1])
+lines(CondMean[1:100,1],col="red")
+lines(NaiveFC[1:100,1],col="blue")
+
+lines(CondMean_p[1:100,1],col="brown")
+
+plot(x[(is_length+1):((is_length+1)+100)],type="l")
+#lines(CondMean[1:100,10])
+lines(CondMean[1:100,10],col="red")
+lines(NaiveFC[1:100,10],col="blue")
+
+lines(CondMean_p[1:100,10],col="brown")
+
+plot(x[((is_length+1)+20):((is_length+1)+20+100)],type="l")
+#lines(CondMean[1:100,10])
+lines(CondMean[(1+20):(100+20),20],col="red")
+lines(NaiveFC[(1+20):(100+20),20],col="blue")
+
+lines(CondMean_p[(1+20):(100+20),20],col="brown")
+
+plot(x[((is_length+1)+20):((is_length+1)+20+30)],type="l")
+#lines(CondMean[1:100,10])
+lines(CondMean[(1+20):(30+20),20],col="red")
+lines(NaiveFC[(1+20):(30+20),20],col="blue")
+
+lines(CondMean_p[(1+20):(30+20),20],col="brown")
+```
  
