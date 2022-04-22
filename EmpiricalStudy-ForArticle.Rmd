@@ -797,7 +797,7 @@ for(tau in 1:noos){
     Weight_SetDifference_p[tau,h]<-lebAsetdiff_fc/lebA_fc
     
     
-    CondMean_p[tau,h] <- actualvalue*Weight_Intersection_p[tau, h]+(1-my_theta)*Weight_SetDifference_p[tau,h]
+    CondMean_p[tau,h] <- actualvalue*Weight_Intersection_p[tau, h]+(1-my_theta)*lebA_fc*Weight_SetDifference_p[tau,h]
     
     CondMean_IV_p[tau,h]<-round(CondMean_p[tau,h])
     
