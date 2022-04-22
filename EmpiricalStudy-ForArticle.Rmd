@@ -8,6 +8,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
 ```
 
 ## Data description
@@ -913,4 +914,34 @@ lines(NaiveFC[(1+20):(30+20),20],col="blue")
 
 lines(CondMean_p[(1+20):(30+20),20],col="brown")
 ```
+```{r}
+#Plot the errors with ggplot
+ratio1 <- CondMean_MSE/CondMean_p_MSE
+df1<-data.frame(lag=seq(1,20,1), ratio=ratio1)
+
+df1p <-ggplot(data=df1, aes(x=lag, y=ratio))+
+  geom_bar(stat="identity")+
+  ylim(0,1)+
+  geom_hline(yintercept=1, lty=2, col='red')+
+  xlab("Lag")+
+  ylab("Ratio of MSEs")
+df1p
+ggsave("CondMean-nonpar-par-MSE-ratio.eps", width = 20, height = 20, units = "cm")
+
+ratio2 <- CondMean_MAE/CondMean_p_MAE
+df2<-data.frame(lag=seq(1,20,1), ratio=ratio2)
+
+df2p <-ggplot(data=df2, aes(x=lag, y=ratio))+
+  geom_bar(stat="identity")+
+  ylim(0,1)+
+  geom_hline(yintercept=1, lty=2, col='red')+
+  xlab("Lag")+
+  ylab("Ratio of MAEs")
+df2p
+ggsave("CondMean-nonpar-par-MAE-ratio.eps", width = 20, height = 20, units = "cm")
+
+
+```
+ 
+ 
  
