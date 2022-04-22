@@ -9,6 +9,22 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
+knitr::knit_hooks$set(time_it = local({
+  now <- NULL
+  function(before, options) {
+    if (before) {
+      # record the current time before each chunk
+      now <<- Sys.time()
+    } else {
+      # calculate the time difference after a chunk
+      res <- difftime(Sys.time(), now)
+      # return a character string to show the time
+      paste("Time for this code chunk to run:", res)
+    }
+  }
+}))
+
+knitr::opts_chunk$set(time_it = TRUE)
 ```
 
 ## Data description
@@ -737,6 +753,8 @@ parvec_mtilde <-numeric(noos)
 parvec_c <- numeric(noos)
 parvec_lebA <-numeric(noos)
 
+set.seed(1)
+
 for(tau in 1:noos){
 #tau<-1
 
@@ -917,11 +935,12 @@ lines(CondMean_p[(1+20):(30+20),20],col="brown")
 ```{r}
 #Plot the errors with ggplot
 ratio1 <- CondMean_MSE/CondMean_p_MSE
+ratio1
 df1<-data.frame(lag=seq(1,20,1), ratio=ratio1)
 
 df1p <-ggplot(data=df1, aes(x=lag, y=ratio))+
   geom_bar(stat="identity")+
-  ylim(0,1)+
+  ylim(0,1.16)+
   geom_hline(yintercept=1, lty=2, col='red')+
   xlab("Lag")+
   ylab("Ratio of MSEs")
@@ -929,11 +948,12 @@ df1p
 ggsave("CondMean-nonpar-par-MSE-ratio.eps", width = 20, height = 20, units = "cm")
 
 ratio2 <- CondMean_MAE/CondMean_p_MAE
+ratio2
 df2<-data.frame(lag=seq(1,20,1), ratio=ratio2)
 
 df2p <-ggplot(data=df2, aes(x=lag, y=ratio))+
   geom_bar(stat="identity")+
-  ylim(0,1)+
+  ylim(0,1.16)+
   geom_hline(yintercept=1, lty=2, col='red')+
   xlab("Lag")+
   ylab("Ratio of MAEs")
