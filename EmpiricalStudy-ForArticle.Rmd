@@ -1,7 +1,7 @@
 ---
 title: "Empirical study for article"
 author: "Orimar Sauri and Almut Veraart"
-date: "21/04/2022"
+date: "22/04/2022"
 output: html_document
 
 ---
@@ -662,7 +662,49 @@ lines(CondMean_linear[(1+20):(30+20),20],col="brown")
 ```{r, message=FALSE}
 library(trawl)
 ```
-We fit a NegBin trawl model with supOU trawl function to the data using the same rolling window as in the nonparametric set-up.
+We fit a NegBin trawl model with supOU trawl function.
+We first fit such a model to the full sample.
+```{r}
+
+
+  data <-x
+  
+  #Estimate trawl function parameters
+  esttrawlfct_fc <- fit_LMtrawl(data, Delta=my_Delta, GMMlag=10,plot=TRUE) #estimated trawl   function for forecasting 
+  
+  my_alpha <- esttrawlfct_fc$alpha
+  my_alpha
+  my_H <- esttrawlfct_fc$H
+  my_H
+  
+
+  #Estimate the Lebesgue measure of the trawl set (components)
+  lebA_fc_c1 <-my_alpha/(my_H-1)
+  lebA_fc_c1
+  
+  #Estimate negaitve binomial parameters
+  negbinpar <- fit_marginalNB(data, lebA_fc_c1, plot=TRUE)
+  
+  my_theta <- negbinpar$theta
+  my_m <- negbinpar$m
+  my_mtilde <- (1-my_theta)^2/my_theta
+  
+  my_c <- my_theta*my_m/(1-my_theta)^2
+
+  lebA_fc <-lebA_fc_c1*my_c
+  
+  my_theta
+  my_m
+  my_mtilde
+  my_c
+ lebA_fc
+  
+  
+
+```
+
+Next we fit a NegBin trawl model with supOU trawl function
+to the data using the same rolling window as in the nonparametric set-up.
 
 ```{r}
 is_length <- 3000 #in sample length
