@@ -679,6 +679,45 @@ lines(CondMean_linear[(1+20):(30+20),20],col="brown")
 ```{r, message=FALSE}
 library(trawl)
 ```
+We fit a NegBin trawl model with exponential trawl function first, before considering
+a supOU trawl function.
+
+```{r}
+  data <-x
+  
+  #Estimate trawl function parameters
+  esttrawlfct_fc <- fit_Exptrawl(data, Delta=my_Delta, plot=TRUE) #estimated trawl   function for forecasting 
+  
+  my_lambda <- esttrawlfct_fc$lambda
+  my_lambda
+  
+  
+
+  #Estimate the Lebesgue measure of the trawl set (components)
+  lebA_fc_c1 <-1/my_lambda
+  lebA_fc_c1
+  
+  #Estimate negaitve binomial parameters
+  negbinpar <- fit_marginalNB(data, lebA_fc_c1, plot=TRUE)
+  
+  my_theta <- negbinpar$theta
+  my_m <- negbinpar$m
+  my_mtilde <- (1-my_theta)^2/my_theta
+  
+  my_c <- my_theta*my_m/(1-my_theta)^2
+
+  lebA_fc <-lebA_fc_c1*my_c
+  
+  my_theta
+  my_m
+  my_mtilde
+  my_c
+ lebA_fc
+  
+  
+
+```
+
 We fit a NegBin trawl model with supOU trawl function.
 We first fit such a model to the full sample.
 ```{r}
