@@ -179,7 +179,7 @@ noos <- n-is_length-hrange #=941 for is_length=3000
 #Create forecast matrices:
 CondMean <-matrix(0, nrow=noos, ncol=hrange)
 CondMean_IV <-matrix(0, nrow=noos, ncol=hrange)
-CondMean_linear <-matrix(0, nrow=noos, ncol=hrange)
+#CondMean_linear <-matrix(0, nrow=noos, ncol=hrange)
 NaiveFC <-matrix(0, nrow=noos, ncol=hrange)
 NaiveMeanFC <-matrix(0, nrow=noos, ncol=hrange)
 
@@ -188,8 +188,8 @@ ActualValues <- matrix(0, nrow=noos, ncol=hrange)
 Weight_Intersection <- matrix(0, nrow=noos, ncol=hrange)
 Weight_SetDifference <- matrix(0, nrow=noos, ncol=hrange)
 
-Weight_Intersection_linear <- matrix(0, nrow=noos, ncol=hrange)
-Weight_SetDifference_linear <- matrix(0, nrow=noos, ncol=hrange)
+#Weight_Intersection_linear <- matrix(0, nrow=noos, ncol=hrange)
+#Weight_SetDifference_linear <- matrix(0, nrow=noos, ncol=hrange)
 
 
 for(tau in 1:noos){
@@ -204,7 +204,7 @@ for(tau in 1:noos){
   esttrawlfct_fc <- nonpar_trawlest(data, Delta=my_Delta, lag=my_lag)$a_hat #estimated trawl   function for forecasting 
   
   #Differences between points for linear approximation (set sign to positive)
-  diff_esttrawlfct_fc <- -diff(esttrawlfct_fc)
+  #diff_esttrawlfct_fc <- -diff(esttrawlfct_fc)
   
   #Estimate the Lebesgue measure of the trawl set (components)
   #lebA_fc <-sum(esttrawlfct_fc)*my_Delta
@@ -213,23 +213,25 @@ for(tau in 1:noos){
   #Estimate the Lebesgue measure of the trawl set (components)
   #using linear approximation between points
   
-  lebA_linear_fc <-sum(esttrawlfct_fc[2:my_lag])*my_Delta   +sum(diff_esttrawlfct_fc[2:(my_lag-1)])*my_Delta*0.5
+  #lebA_linear_fc <-sum(esttrawlfct_fc[2:my_lag])*my_Delta   +sum(diff_esttrawlfct_fc[2:(my_lag-1)])*my_Delta*0.5
   
   
   for(h in 1:hrange){ #forecasting horizon loop in 1:hrange
     #h<-1
+    
+    slices <- LebA_slice_est(data, my_Delta, h*my_Delta)#Note correction to h rather than h+1
     #Estimate Leb(A intersection A_h)
     
     #lebAintersection_fc <-sum(esttrawlfct_fc[(h+1):my_lag])*my_Delta
-    lebAintersection_fc <-LebA_slice_est(data, my_Delta, (h+1)*my_Delta)$LebAintersection 
+    lebAintersection_fc <-slices$LebAintersection 
     
-    lebAintersection_linear_fc <-sum(esttrawlfct_fc[(h+2):my_lag])*my_Delta   +sum(diff_esttrawlfct_fc[(h+1):(my_lag-1)])*my_Delta*0.5
+    #lebAintersection_linear_fc <-sum(esttrawlfct_fc[(h+2):my_lag])*my_Delta   +sum(diff_esttrawlfct_fc[(h+1):(my_lag-1)])*my_Delta*0.5
     #Estimate Leb(A \ A_h)
     
-    lebAsetdiff_fc <-lebA_fc-lebAintersection_fc#sum(esttrawlfct_fc[1:h])*my_Delta
+    #lebAsetdiff_fc <-lebA_fc-lebAintersection_fc#sum(esttrawlfct_fc[1:h])*my_Delta
+    lebAsetdiff_fc <-slices$LebAsetdifference 
     
-    
-    lebAsetdiff_linear_fc <-lebA_linear_fc-lebAintersection_linear_fc
+    #lebAsetdiff_linear_fc <-lebA_linear_fc-lebAintersection_linear_fc
     
     #ActualValue
     ActualValues[tau,h]<- x[(is_length+tau-1+h)]
@@ -276,8 +278,8 @@ CondMean_MSE <- numeric(hrange)
 CondMean_IV_MAE <- numeric(hrange)
 CondMean_IV_MSE <- numeric(hrange)
 
-CondMean_linear_MAE <- numeric(hrange)
-CondMean_linear_MSE <- numeric(hrange)
+#CondMean_linear_MAE <- numeric(hrange)
+#CondMean_linear_MSE <- numeric(hrange)
 
 Naive_MAE <- numeric(hrange)
 Naive_MSE <- numeric(hrange)
@@ -292,8 +294,8 @@ for(h in 1:hrange){
   CondMean_IV_MAE[h] <-my_mae(CondMean_IV[,h], ActualValues[,h])
   CondMean_IV_MSE[h] <-my_mse(CondMean_IV[,h], ActualValues[,h])
   
-  CondMean_linear_MAE[h] <-my_mae(CondMean_linear[,h], ActualValues[,h])
-  CondMean_linear_MSE[h] <-my_mse(CondMean_linear[,h], ActualValues[,h])
+  #CondMean_linear_MAE[h] <-my_mae(CondMean_linear[,h], ActualValues[,h])
+  #CondMean_linear_MSE[h] <-my_mse(CondMean_linear[,h], ActualValues[,h])
   
   Naive_MAE[h] <-my_mae(NaiveFC[,h], ActualValues[,h])
   Naive_MSE[h] <-my_mse(NaiveFC[,h], ActualValues[,h])
@@ -312,20 +314,20 @@ print(CondMean_IV_MAE/Naive_MAE)
 
 print(CondMean_IV_MSE/Naive_MSE)
 
-print(CondMean_linear_MAE/Naive_MAE)
+#print(CondMean_linear_MAE/Naive_MAE)
 
-print(CondMean_linear_MSE/Naive_MSE)
+#print(CondMean_linear_MSE/Naive_MSE)
 
-print(CondMean_linear_MAE/CondMean_MAE)
+#print(CondMean_linear_MAE/CondMean_MAE)
 
-print(CondMean_linear_MSE/CondMean_MSE)
+#print(CondMean_linear_MSE/CondMean_MSE)
 
 #Plot the errors
 plot(CondMean_MSE/Naive_MSE, type="h")
 
-plot(CondMean_linear_MSE/Naive_MSE, type="h")
+#plot(CondMean_linear_MSE/Naive_MSE, type="h")
 
-plot(CondMean_linear_MSE/CondMean_MSE, type="h")
+#plot(CondMean_linear_MSE/CondMean_MSE, type="h")
 
 
 
