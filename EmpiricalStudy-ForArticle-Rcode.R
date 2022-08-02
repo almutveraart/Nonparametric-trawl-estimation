@@ -169,16 +169,11 @@ my_lag <-is_length-1
 my_Delta <-1/12 #sampling in 5s=1/12 min
 
 
-
-
-
 hrange <- 20
 noos <- n-is_length-hrange #=941 for is_length=3000
 #Create forecast matrices:
 CondMean <-matrix(0, nrow=noos, ncol=hrange)
-CondMean_IV <-matrix(0, nrow=noos, ncol=hrange)
 NaiveFC <-matrix(0, nrow=noos, ncol=hrange)
-NaiveMeanFC <-matrix(0, nrow=noos, ncol=hrange)
 
 ActualValues <- matrix(0, nrow=noos, ncol=hrange)
 
@@ -220,7 +215,6 @@ for(tau in 1:noos){
     #Compute forecast(s)
     #naive
     NaiveFC[tau,h] <- actualvalue
-    NaiveMeanFC[tau,h] <- datamean
     
     #trawl formula
     Weight_Intersection[tau, h]<-lebAintersection_fc/lebA_fc
@@ -228,9 +222,6 @@ for(tau in 1:noos){
     
     CondMean[tau,h] <- actualvalue*Weight_Intersection[tau, h]+datamean*Weight_SetDifference[tau,h]
     
-    CondMean_IV[tau,h]<-round(CondMean[tau,h])
-    
-    CondMean_linear[tau,h] <- actualvalue*Weight_Intersection_linear[tau, h]+datamean*Weight_SetDifference_linear[tau,h]
     
   } #end for h
   
@@ -252,38 +243,22 @@ my_mae <-function(x, y){
 CondMean_MAE <- numeric(hrange)
 CondMean_MSE <- numeric(hrange)
 
-CondMean_IV_MAE <- numeric(hrange)
-CondMean_IV_MSE <- numeric(hrange)
-
 Naive_MAE <- numeric(hrange)
 Naive_MSE <- numeric(hrange)
 
-NaiveMean_MAE <- numeric(hrange)
-NaiveMean_MSE <- numeric(hrange)
 
 for(h in 1:hrange){
   CondMean_MAE[h] <-my_mae(CondMean[,h], ActualValues[,h])
   CondMean_MSE[h] <-my_mse(CondMean[,h], ActualValues[,h])
   
-  CondMean_IV_MAE[h] <-my_mae(CondMean_IV[,h], ActualValues[,h])
-  CondMean_IV_MSE[h] <-my_mse(CondMean_IV[,h], ActualValues[,h])
-  
   Naive_MAE[h] <-my_mae(NaiveFC[,h], ActualValues[,h])
   Naive_MSE[h] <-my_mse(NaiveFC[,h], ActualValues[,h])
   
-  NaiveMean_MAE[h] <-my_mae(NaiveMeanFC[,h], ActualValues[,h])
-  NaiveMean_MSE[h] <-my_mse(NaiveMeanFC[,h], ActualValues[,h])
 }
 
 print(CondMean_MAE/Naive_MAE)
 
 print(CondMean_MSE/Naive_MSE)
-
-
-
-print(CondMean_IV_MAE/Naive_MAE)
-
-print(CondMean_IV_MSE/Naive_MSE)
 
 
 #Plot the errors
@@ -322,8 +297,6 @@ ggsave("CondMean-Naive-MAE-ratio.eps", width = 20, height = 20, units = "cm")
 ## Comparing the nonparametric forecasts with a parametric forecast
 ##We fit a NegBin trawl model with supOU trawl function.
 #We first fit such a model to the full sample.
-
-
 data <-x
 
 #Estimate trawl function parameters
@@ -339,7 +312,7 @@ my_H
 lebA_fc_c1 <-my_alpha/(my_H-1)
 lebA_fc_c1
 
-#Estimate negaitve binomial parameters
+#Estimate negative binomial parameters
 negbinpar <- fit_marginalNB(data, lebA_fc_c1, plot=TRUE)
 
 my_theta <- negbinpar$theta
@@ -382,14 +355,6 @@ ActualValues <- matrix(0, nrow=noos, ncol=hrange)
 Weight_Intersection_p <- matrix(0, nrow=noos, ncol=hrange)
 Weight_SetDifference_p <- matrix(0, nrow=noos, ncol=hrange)
 
-parvec_alpha <-numeric(noos)
-parvec_H <- numeric(noos)
-parvec_theta <- numeric(noos)
-parvev_m <- numeric(noos)
-parvec_mtilde <-numeric(noos)
-parvec_c <- numeric(noos)
-parvec_lebA <-numeric(noos)
-
 set.seed(1)
 
 for(tau in 1:noos){
@@ -417,40 +382,25 @@ for(tau in 1:noos){
   
   lebA_fc <-lebA_fc_c1*my_c
   
-  parvec_alpha[tau] <-my_alpha
-  parvec_H[tau] <- my_H
-  parvec_theta[tau] <- my_theta
-  parvev_m[tau] <- my_m
-  parvec_mtilde[tau] <-my_mtilde
-  parvec_c[tau] <- my_c
-  parvec_lebA[tau] <-lebA_fc
   
   for(h in 1:hrange){ #forecasting horizon loop in 1:hrange
     
     #Estimate Leb(A intersection A_h)
     lebAintersection_fc <-my_c*my_alpha/(my_H-1)*(1+h*my_Delta/my_alpha)^(1-my_H)
     
-    
     #Estimate Leb(A \ A_h)
     lebAsetdiff_fc <-lebA_fc-lebAintersection_fc
     
-    
-    
     #ActualValue
     ActualValues[tau,h]<- x[(is_length+tau-1+h)]
+    
     #Compute forecast(s)
-    
     #trawl formula
-    
-    
     Weight_Intersection_p[tau, h]<-lebAintersection_fc/lebA_fc
     Weight_SetDifference_p[tau,h]<-lebAsetdiff_fc/lebA_fc
     
     
     CondMean_p[tau,h] <- actualvalue*Weight_Intersection_p[tau, h]+(1-my_theta)*lebA_fc*Weight_SetDifference_p[tau,h]
-    
-    CondMean_IV_p[tau,h]<-round(CondMean_p[tau,h])
-    
     
     
   } #end for h
@@ -458,48 +408,19 @@ for(tau in 1:noos){
 }#end for tau
 
 
-#We briefly consider the parameter estimates for the forecasting exercise:
-  
-
-boxplot(parvec_alpha)
-boxplot(parvec_H)
-
-boxplot(parvec_theta)
-boxplot(parvev_m)
-
-boxplot(parvec_mtilde)
-boxplot(parvec_c)
-
-boxplot(parvec_lebA)
-
 #Next we compute the error measures:
 
 CondMean_p_MAE <- numeric(hrange)
 CondMean_p_MSE <- numeric(hrange)
 
-CondMean_IV_p_MAE <- numeric(hrange)
-CondMean_IV_p_MSE <- numeric(hrange)
-
-
-
 for(h in 1:hrange){
   CondMean_p_MAE[h] <-my_mae(CondMean_p[,h], ActualValues[,h])
   CondMean_p_MSE[h] <-my_mse(CondMean_p[,h], ActualValues[,h])
-  
-  CondMean_IV_p_MAE[h] <-my_mae(CondMean_IV_p[,h], ActualValues[,h])
-  CondMean_IV_p_MSE[h] <-my_mse(CondMean_IV_p[,h], ActualValues[,h])
-  
 }
 
 print(CondMean_p_MAE/Naive_MAE)
 
 print(CondMean_p_MSE/Naive_MSE)
-
-
-
-print(CondMean_IV_p_MAE/Naive_MAE)
-
-print(CondMean_IV_p_MSE/Naive_MSE)
 
 ####
 print(CondMean_p_MAE/CondMean_MAE)
@@ -583,7 +504,8 @@ for(tau in 1:noos){
     Weight_Intersection_simple[tau, h]<-my_acf
     Weight_SetDifference_simple[tau,h]<-1-my_acf
     
-    CondMean_simple[tau,h] <- actualvalue*Weight_Intersection_simple[tau, h]+datamean*Weight_SetDifference_simple[tau,h]
+    CondMean_simple[tau
+                    ,h] <- actualvalue*Weight_Intersection_simple[tau, h]+datamean*Weight_SetDifference_simple[tau,h]
     
    
     
@@ -616,26 +538,26 @@ print(CondMean_simple_MSE/CondMean_MSE)
 
 
 #Plot the errors with ggplot
-ratio1 <- CondMean_simple_MSE/CondMean_MSE
+ratio1 <- CondMean_MSE/CondMean_simple_MSE
 ratio1
 df1<-data.frame(lag=seq(1,20,1), ratio=ratio1)
 
 df1p <-ggplot(data=df1, aes(x=lag, y=ratio))+
   geom_bar(stat="identity")+
-  ylim(0,1.16)+
+  ylim(0,1.1)+
   geom_hline(yintercept=1, lty=2, col='red')+
   xlab("Lag")+
   ylab("Ratio of MSEs")
 df1p
 ggsave("CondMean-simple-MSE-ratio.eps", width = 20, height = 20, units = "cm")
 
-ratio2 <- CondMean_simple_MAE/CondMean_MAE
+ratio2 <- CondMean_MAE/CondMean_simple_MAE
 ratio2
 df2<-data.frame(lag=seq(1,20,1), ratio=ratio2)
 
 df2p <-ggplot(data=df2, aes(x=lag, y=ratio))+
   geom_bar(stat="identity")+
-  ylim(0,1.16)+
+  ylim(0,1.1)+
   geom_hline(yintercept=1, lty=2, col='red')+
   xlab("Lag")+
   ylab("Ratio of MAEs")
