@@ -1,5 +1,5 @@
 #Code for the empirical study
-#Last update: 28.07.2022
+#Last update: 02.08.2022
 library(R.matlab)
 library(lubridate)
 library(ggplot2)
@@ -207,7 +207,9 @@ for(tau in 1:noos){
   diff_esttrawlfct_fc <- -diff(esttrawlfct_fc)
   
   #Estimate the Lebesgue measure of the trawl set (components)
-  lebA_fc <-sum(esttrawlfct_fc)*my_Delta
+  #lebA_fc <-sum(esttrawlfct_fc)*my_Delta
+  lebA_fc <- LebA_est(data, my_Delta)
+  
   #Estimate the Lebesgue measure of the trawl set (components)
   #using linear approximation between points
   
@@ -218,7 +220,8 @@ for(tau in 1:noos){
     #h<-1
     #Estimate Leb(A intersection A_h)
     
-    lebAintersection_fc <-sum(esttrawlfct_fc[(h+1):my_lag])*my_Delta
+    #lebAintersection_fc <-sum(esttrawlfct_fc[(h+1):my_lag])*my_Delta
+    lebAintersection_fc <-LebA_slice_est(data, my_Delta, (h+1)*my_Delta)$LebAintersection 
     
     lebAintersection_linear_fc <-sum(esttrawlfct_fc[(h+2):my_lag])*my_Delta   +sum(diff_esttrawlfct_fc[(h+1):(my_lag-1)])*my_Delta*0.5
     #Estimate Leb(A \ A_h)
