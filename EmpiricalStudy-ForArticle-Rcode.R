@@ -263,7 +263,7 @@ df1<-data.frame(lag=seq(1,20,1), ratio=ratio1)
 
 df1p <-ggplot(data=df1, aes(x=lag, y=ratio))+
   geom_bar(stat="identity")+
-  ylim(0,1.1)+
+  ylim(0,1.2)+
   geom_hline(yintercept=1, lty=2, col='red')+
   xlab("Lag")+
   ylab("Ratio of MSEs")
@@ -276,7 +276,7 @@ df2<-data.frame(lag=seq(1,20,1), ratio=ratio2)
 
 df2p <-ggplot(data=df2, aes(x=lag, y=ratio))+
   geom_bar(stat="identity")+
-  ylim(0,1.1)+
+  ylim(0,1.2)+
   geom_hline(yintercept=1, lty=2, col='red')+
   xlab("Lag")+
   ylab("Ratio of MAEs")
@@ -427,7 +427,7 @@ df1<-data.frame(lag=seq(1,20,1), ratio=ratio1)
 
 df1p <-ggplot(data=df1, aes(x=lag, y=ratio))+
   geom_bar(stat="identity")+
-  ylim(0,1.1)+
+  ylim(0,1.2)+
   geom_hline(yintercept=1, lty=2, col='red')+
   xlab("Lag")+
   ylab("Ratio of MSEs")
@@ -440,7 +440,7 @@ df2<-data.frame(lag=seq(1,20,1), ratio=ratio2)
 
 df2p <-ggplot(data=df2, aes(x=lag, y=ratio))+
   geom_bar(stat="identity")+
-  ylim(0,1.1)+
+  ylim(0,1.2)+
   geom_hline(yintercept=1, lty=2, col='red')+
   xlab("Lag")+
   ylab("Ratio of MAEs")
@@ -533,7 +533,7 @@ df1<-data.frame(lag=seq(1,20,1), ratio=ratio1)
 
 df1p <-ggplot(data=df1, aes(x=lag, y=ratio))+
   geom_bar(stat="identity")+
-  ylim(0,1.1)+
+  ylim(0,1.2)+
   geom_hline(yintercept=1, lty=2, col='red')+
   xlab("Lag")+
   ylab("Ratio of MSEs")
@@ -546,7 +546,7 @@ df2<-data.frame(lag=seq(1,20,1), ratio=ratio2)
 
 df2p <-ggplot(data=df2, aes(x=lag, y=ratio))+
   geom_bar(stat="identity")+
-  ylim(0,1.1)+
+  ylim(0,1.2)+
   geom_hline(yintercept=1, lty=2, col='red')+
   xlab("Lag")+
   ylab("Ratio of MAEs")
