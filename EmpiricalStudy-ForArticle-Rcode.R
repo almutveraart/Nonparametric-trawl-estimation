@@ -1,5 +1,7 @@
-#Code for the empirical study
-#Last update: 02.08.2022
+#This file contains the R code for the empirical study presented in the article
+#"Nonparametric estimation for trawl processes: Theory and Applications" 
+#by Orimar Sauri (Aalborg University) and Almut Veraart (Imperial College London).
+#Last update: 09.08.2022
 library(R.matlab)
 library(lubridate)
 library(ggplot2)
@@ -25,15 +27,16 @@ allx <- spread-1
 summary(allx)
 
 x <- data$y #spread data in cent (5s sampling)
-n<-length(x)
+n <-length(x)
 
 
 plot(x, type="l")
 summary(x)
 acf(x)
 
-#Plots using ggplot
+#Plot using ggplot
 theme_update(text = element_text(size=30)) #Increase font size in labels
+
 #Plot as time series with correct times
 time_seq <- seq(from = lubridate::mdy_hms("04-05-2020 10:30:00"),to = lubridate::mdy_hms("04-05-2020 16:00:00"), by = "5 sec")
 spread.ts <- data.frame(time=time_seq,
@@ -64,15 +67,14 @@ ggsave("ACF.eps", width = 20, height = 20, units = "cm")
 
 
 # Fitting the trawl function
-my_lag <-n-1
-my_Delta <-1/12#sampling in 5s=1/12 min
+my_lag <- n-1
+my_Delta <- 1/12 #sampling in 5s=1/12 min
 esttrawlfct <- nonpar_trawlest(x, Delta=my_Delta, lag=my_lag)$a_hat
 plot(esttrawlfct)
 
 plot(esttrawlfct[1:100])
 abline(h=0,col="red")
 
-#print(esttrawlfct)
 
 #Using ggplot
 l_seq <- seq(from = 0,to = (my_lag-1), by = 1)
@@ -87,13 +89,14 @@ ggsave("hata.eps", width = 20, height = 20, units = "cm")
 
 
 # Confidence intervals for the trawl function
-#We plot the asymptotic variance on our $\Delta$-grid:
+# We plot the asymptotic variance on our $\Delta$-grid:
 c4 <- c4est(x, my_Delta)  
 av_vector <-numeric(my_lag)
 for(i in 1:my_lag){
   av_vector[i] <- asymptotic_variance_est((i-1)*my_Delta, c4, varlevyseed=1, my_Delta, esttrawlfct)$v
 }
-#Note that av_vector[1] contains the value for i=0 etc
+
+#Note that av_vector[1] contains the value for i=0 etc.
 plot(av_vector)
 plot(sqrt(av_vector/(my_Delta*n)))
 plot(av_vector[1:31])
@@ -157,7 +160,8 @@ g5
 ggsave("CIs.eps", width = 20, height = 20, units = "cm")
 
 which(y3<0)
-#We note that the trawl function estimate is negative for index 18, 22, 23, 25, 28, 31 etc.
+#We note that the trawl function estimate is negative for 
+#index 18, 22, 23, 25, 28, 31 etc.
 #(i=17, 21, 22, 24 etc.).
 
 ##########################
@@ -189,12 +193,9 @@ for(tau in 1:noos){
   datamean <- mean(data) 
   
   #Estimate trawl function
-  esttrawlfct_fc <- nonpar_trawlest(data, Delta=my_Delta, lag=my_lag)$a_hat #estimated trawl   function for forecasting 
-  
-  
+  esttrawlfct_fc <- nonpar_trawlest(data, Delta=my_Delta, lag=my_lag)$a_hat 
   
   #Estimate the Lebesgue measure of the trawl set (components)
-  #lebA_fc <-sum(esttrawlfct_fc)*my_Delta
   lebA_fc <- LebA_est(data, my_Delta)
   
   
@@ -216,7 +217,7 @@ for(tau in 1:noos){
     #naive
     NaiveFC[tau,h] <- actualvalue
     
-    #trawl formula
+    #Trawl prediction formula:
     Weight_Intersection[tau, h]<-lebAintersection_fc/lebA_fc
     Weight_SetDifference[tau,h]<-lebAsetdiff_fc/lebA_fc
     
@@ -227,16 +228,6 @@ for(tau in 1:noos){
   
 }#end for tau
 
-
-my_mse <-function(x, y){
-  length<-length(x)
-  return(sum((x-y)^2)/length)
-}
-
-my_mae <-function(x, y){
-  length<-length(x)
-  return(sum(abs(x-y))/length)
-}
 
 #Computing the error measures
 
@@ -297,10 +288,10 @@ ggsave("CondMean-Naive-MAE-ratio.eps", width = 20, height = 20, units = "cm")
 ## Comparing the nonparametric forecasts with a parametric forecast
 ##We fit a NegBin trawl model with supOU trawl function.
 #We first fit such a model to the full sample.
-data <-x
+data <- x
 
 #Estimate trawl function parameters
-esttrawlfct_fc <- fit_LMtrawl(data, Delta=my_Delta, GMMlag=10,plot=TRUE) #estimated trawl   function for forecasting 
+esttrawlfct_fc <- fit_LMtrawl(data, Delta=my_Delta, GMMlag=10,plot=TRUE) 
 
 my_alpha <- esttrawlfct_fc$alpha
 my_alpha
@@ -337,7 +328,7 @@ lebA_fc
 is_length <- 3000 #in sample length
 
 my_lag <-is_length-1
-my_Delta <-1/12#sampling in 5s=1/12 min
+my_Delta <-1/12 #sampling in 5s=1/12 min
 
 
 
@@ -345,7 +336,7 @@ my_Delta <-1/12#sampling in 5s=1/12 min
 hrange <- 20
 noos <- n-is_length-hrange #=941 for is_length=3000
 
-#noos <- 4
+
 #Create forecast matrices:
 CondMean_p <-matrix(0, nrow=noos, ncol=hrange)
 CondMean_IV_p <-matrix(0, nrow=noos, ncol=hrange)
@@ -363,7 +354,7 @@ for(tau in 1:noos){
   actualvalue <- x[(is_length+tau-1)]
    
   #Estimate trawl function parameters
-  esttrawlfct_fc <- fit_LMtrawl(data, Delta=my_Delta, GMMlag=10) #estimated trawl   function for forecasting 
+  esttrawlfct_fc <- fit_LMtrawl(data, Delta=my_Delta, GMMlag=10)  
   
   my_alpha <- esttrawlfct_fc$alpha
   my_H <- esttrawlfct_fc$H
@@ -395,7 +386,7 @@ for(tau in 1:noos){
     ActualValues[tau,h]<- x[(is_length+tau-1+h)]
     
     #Compute forecast(s)
-    #trawl formula
+    #Trawl prediction formula
     Weight_Intersection_p[tau, h]<-lebAintersection_fc/lebA_fc
     Weight_SetDifference_p[tau,h]<-lebAsetdiff_fc/lebA_fc
     
@@ -463,8 +454,8 @@ ggsave("CondMean-nonpar-par-MAE-ratio.eps", width = 20, height = 20, units = "cm
 ######################
 is_length <- 3000 #in sample length
 
-my_lag <-is_length-1
-my_Delta <-1/12 #sampling in 5s=1/12 min
+my_lag <- is_length-1
+my_Delta <- 1/12 #sampling in 5s=1/12 min
 
 
 
@@ -497,9 +488,7 @@ for(tau in 1:noos){
     ActualValues[tau,h]<- x[(is_length+tau-1+h)]
     
     #Compute forecast(s)
-    
-    
-    #trawl formula
+    #Trawl prediction formula
     my_acf <- acf(data, plot=FALSE)$acf[h+1]
     Weight_Intersection_simple[tau, h]<-my_acf
     Weight_SetDifference_simple[tau,h]<-1-my_acf
