@@ -6,8 +6,10 @@ library(R.matlab)
 library(lubridate)
 library(ggplot2)
 library(dplyr)
+library(forecast)
 library(latex2exp)
 library(reshape2)
+library(gtools)
 library(trawl)
 library(ambit)
 
@@ -256,33 +258,6 @@ print(CondMean_MSE/Naive_MSE)
 plot(CondMean_MSE/Naive_MSE, type="h")
 
 
-#Plot the errors with ggplot
-ratio1 <- CondMean_MSE/Naive_MSE
-ratio1
-df1<-data.frame(lag=seq(1,20,1), ratio=ratio1)
-
-df1p <-ggplot(data=df1, aes(x=lag, y=ratio))+
-  geom_bar(stat="identity")+
-  ylim(0,1.2)+
-  geom_hline(yintercept=1, lty=2, col='red')+
-  xlab("Lag")+
-  ylab("Ratio of MSEs")
-df1p
-ggsave("CondMean-Naive-MSE-ratio.eps", width = 20, height = 20, units = "cm")
-
-ratio2 <- CondMean_MAE/Naive_MAE
-ratio2
-df2<-data.frame(lag=seq(1,20,1), ratio=ratio2)
-
-df2p <-ggplot(data=df2, aes(x=lag, y=ratio))+
-  geom_bar(stat="identity")+
-  ylim(0,1.2)+
-  geom_hline(yintercept=1, lty=2, col='red')+
-  xlab("Lag")+
-  ylab("Ratio of MAEs")
-df2p
-ggsave("CondMean-Naive-MAE-ratio.eps", width = 20, height = 20, units = "cm")
-
 
 
 ## Comparing the nonparametric forecasts with a parametric forecast
@@ -420,33 +395,6 @@ print(CondMean_p_MSE/CondMean_MSE)
 
 
 
-#Plot the errors with ggplot
-ratio1 <- CondMean_MSE/CondMean_p_MSE
-ratio1
-df1<-data.frame(lag=seq(1,20,1), ratio=ratio1)
-
-df1p <-ggplot(data=df1, aes(x=lag, y=ratio))+
-  geom_bar(stat="identity")+
-  ylim(0,1.2)+
-  geom_hline(yintercept=1, lty=2, col='red')+
-  xlab("Lag")+
-  ylab("Ratio of MSEs")
-df1p
-ggsave("CondMean-nonpar-par-MSE-ratio.eps", width = 20, height = 20, units = "cm")
-
-ratio2 <- CondMean_MAE/CondMean_p_MAE
-ratio2
-df2<-data.frame(lag=seq(1,20,1), ratio=ratio2)
-
-df2p <-ggplot(data=df2, aes(x=lag, y=ratio))+
-  geom_bar(stat="identity")+
-  ylim(0,1.2)+
-  geom_hline(yintercept=1, lty=2, col='red')+
-  xlab("Lag")+
-  ylab("Ratio of MAEs")
-df2p
-ggsave("CondMean-nonpar-par-MAE-ratio.eps", width = 20, height = 20, units = "cm")
-
 
 
 #########################
@@ -526,31 +474,202 @@ print(CondMean_simple_MAE/CondMean_MAE)
 print(CondMean_simple_MSE/CondMean_MSE)
 
 
+#Run Diebold-Mariano tests for forecast comparisons
+#Create error matrices:
+CondMean_Error <- CondMean-ActualValues 
+Naive_Error <- NaiveFC - ActualValues
+CondMean_p_Error <- CondMean_p - ActualValues
+CondMean_simple_Error <- CondMean_simple - ActualValues
+
+#Nonparametric trawl versus naive
+CM_Naive1 <-1+numeric(hrange)
+for(h in 2:hrange){
+  print(h)
+  dm<-dm.test(Naive_Error[,h], CondMean_Error[,h] , alternative="greater", h=h, power =1)$p.value
+  print(dm)
+  CM_Naive1[h]<-dm
+}
+CM_Naive1_stars <- stars.pval(CM_Naive1)
+
+#Nonparametric trawl versus naive
+CM_Naive2 <-1+numeric(hrange)
+for(h in 2:hrange){
+  print(h)
+  dm<-dm.test(Naive_Error[,h], CondMean_Error[,h] , alternative="greater", h=h, power =2)$p.value
+  print(dm)
+  CM_Naive2[h]<-dm
+}
+CM_Naive2_stars <- stars.pval(CM_Naive2)
+
+
+#Nonparametric trawl versus parametric trawl
+CM_CMp1 <-numeric(hrange)
+for(h in 1:hrange){
+  print(h)
+  dm<-dm.test(CondMean_p_Error[,h], CondMean_Error[,h] , alternative="greater", h=h, power =1)$p.value
+  print(dm)
+  CM_CMp1[h]<-dm
+}
+CM_CMp1_stars <- stars.pval(CM_CMp1)
+
+#Nonparametric trawl versus naive
+CM_CMp2 <-numeric(hrange)
+for(h in 1:hrange){
+  print(h)
+  dm<-dm.test(CondMean_p_Error[,h], CondMean_Error[,h] , alternative="greater", h=h, power =2)$p.value
+  print(dm)
+  CM_CMp2[h]<-dm
+}
+CM_CMp2_stars <- stars.pval(CM_CMp2)
+
+
+
+
+
+#Nonparametric trawl versus acf-based nonparametric trawl
+#Power 1
+#Nonparametric trawl versus parametric trawl
+CM_CMsimple1 <-numeric(hrange)
+for(h in 1:hrange){
+  print(h)
+  dm<-dm.test(CondMean_simple_Error[,h], CondMean_Error[,h] , alternative="greater", h=h, power =1)$p.value
+  print(dm)
+  CM_CMsimple1[h]<-dm
+}
+CM_CMsimple1_stars <- stars.pval(CM_CMsimple1)
+
+#Nonparametric trawl versus naive
+CM_CMsimple2 <-numeric(hrange)
+for(h in 1:hrange){
+  print(h)
+  dm<-dm.test(CondMean_simple_Error[,h], CondMean_Error[,h] , alternative="greater", h=h, power =2)$p.value
+  print(dm)
+  CM_CMsimple2[h]<-dm
+}
+CM_CMsimple2_stars <- stars.pval(CM_CMsimple2)
+
+
+
+
+#####All error plots
+#Plot the errors with ggplot
+ratio1 <- CondMean_MSE/Naive_MSE
+ratio1
+
+
+df1<-data.frame(lag=seq(1,20,1), ratio=ratio1)
+
+df1p <-ggplot(data=df1, aes(x=lag, y=ratio-1, fill=ifelse(ratio-1>0,"+","-")), show.legend=FALSE)+
+  geom_bar(stat="identity")+
+  scale_fill_manual(values=c("blue","red"), name=" ") +
+  #ylim(-1,1.2)+
+  geom_hline(yintercept=0, lty=2, col='black')+
+  xlab("Lag")+
+  ylab("Ratio of MSEs - 1")
+df1p
+
+label1.df <- data.frame(lag=seq(1,20,1), ratio=1+rep(0.03,20))
+
+df1p+geom_text(data=label1.df, label=CM_Naive2_stars,size=10, angle=90)
+ggsave("CondMean-Naive-MSE-ratio.eps", width = 20, height = 20, units = "cm")
+
+ratio2 <- CondMean_MAE/Naive_MAE
+ratio2
+df2<-data.frame(lag=seq(1,20,1), ratio=ratio2)
+
+df2p <-ggplot(data=df2, aes(x=lag, y=ratio-1, fill=ifelse(ratio-1>0,"+","-")), show.legend=FALSE)+
+  scale_fill_manual(values=c("blue","red"), name=" ") +
+  geom_bar(stat="identity")+
+  #ylim(0,1.2)+
+  geom_hline(yintercept=0, lty=2, col='black')+
+  xlab("Lag")+
+  ylab("Ratio of MAEs - 1")
+df2p
+
+
+
+df2p+geom_text(data=label1.df, label=CM_Naive1_stars,size=10, angle=90)
+ggsave("CondMean-Naive-MAE-ratio.eps", width = 20, height = 20, units = "cm")
+
+
+################################
+
+#Plot the errors with ggplot
+ratio1 <- CondMean_MSE/CondMean_p_MSE
+ratio1
+df1<-data.frame(lag=seq(1,20,1), ratio=ratio1)
+
+df1p <-ggplot(data=df1, aes(x=lag, y=ratio-1, fill=ifelse(ratio-1>0,"+","-")), show.legend=FALSE)+
+  geom_bar(stat="identity")+
+  scale_fill_manual(values=c("blue","red"), name=" ") +
+  #ylim(-1,1.2)+
+  geom_hline(yintercept=0, lty=2, col='black')+
+  xlab("Lag")+
+  ylab("Ratio of MSEs - 1")
+df1p
+
+label1.df <- data.frame(lag=seq(1,20,1), ratio=1+rep(0.03,20))
+
+df1p+geom_text(data=label1.df, label=CM_CMp2_stars,size=10, angle=90)
+ggsave("CondMean-nonpar-par-MSE-ratio.eps", width = 20, height = 20, units = "cm")
+
+ratio2 <- CondMean_MAE/CondMean_p_MAE
+ratio2
+df2<-data.frame(lag=seq(1,20,1), ratio=ratio2)
+
+df2p <-ggplot(data=df2, aes(x=lag, y=ratio-1, fill=ifelse(ratio-1>0,"+","-")), show.legend=FALSE)+
+  scale_fill_manual(values=c("blue","red"), name=" ") +
+  geom_bar(stat="identity")+
+  #ylim(0,1.2)+
+  geom_hline(yintercept=0, lty=2, col='black')+
+  xlab("Lag")+
+  ylab("Ratio of MAEs - 1")
+df2p
+
+
+
+df2p+geom_text(data=label1.df, label=CM_CMp1_stars,size=10, angle=90)
+ggsave("CondMean-nonpar-par-MAE-ratio.eps", width = 20, height = 20, units = "cm")
+
+######################################################
+
 #Plot the errors with ggplot
 ratio1 <- CondMean_MSE/CondMean_simple_MSE
 ratio1
 df1<-data.frame(lag=seq(1,20,1), ratio=ratio1)
 
-df1p <-ggplot(data=df1, aes(x=lag, y=ratio))+
+df1p <-ggplot(data=df1, aes(x=lag, y=ratio-1, fill=ifelse(ratio-1>0,"+","-")), show.legend=FALSE)+
   geom_bar(stat="identity")+
-  ylim(0,1.2)+
-  geom_hline(yintercept=1, lty=2, col='red')+
+  scale_fill_manual(values=c("blue","red"), name=" ") +
+  #ylim(-1,1.2)+
+  geom_hline(yintercept=0, lty=2, col='black')+
   xlab("Lag")+
-  ylab("Ratio of MSEs")
+  ylab("Ratio of MSEs - 1")
 df1p
+
+label1.df <- data.frame(lag=seq(1,20,1), ratio=1+rep(0.03,20))
+
+df1p+geom_text(data=label1.df, label=CM_CMsimple2_stars,size=10, angle=90)
+
 ggsave("CondMean-simple-MSE-ratio.eps", width = 20, height = 20, units = "cm")
 
 ratio2 <- CondMean_MAE/CondMean_simple_MAE
 ratio2
 df2<-data.frame(lag=seq(1,20,1), ratio=ratio2)
 
-df2p <-ggplot(data=df2, aes(x=lag, y=ratio))+
+df2p <-ggplot(data=df2, aes(x=lag, y=ratio-1, fill=ifelse(ratio-1>0,"+","-")), show.legend=FALSE)+
+  scale_fill_manual(values=c("blue","red"), name=" ") +
   geom_bar(stat="identity")+
-  ylim(0,1.2)+
-  geom_hline(yintercept=1, lty=2, col='red')+
+  #ylim(0,1.2)+
+  geom_hline(yintercept=0, lty=2, col='black')+
   xlab("Lag")+
-  ylab("Ratio of MAEs")
+  ylab("Ratio of MAEs - 1")
 df2p
+
+
+
+df2p+geom_text(data=label1.df, label=CM_CMsimple2_stars,size=10, angle=90)
 ggsave("CondMean-simple-MAE-ratio.eps", width = 20, height = 20, units = "cm")
+
 
 
