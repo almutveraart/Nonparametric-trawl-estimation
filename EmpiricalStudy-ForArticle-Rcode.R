@@ -490,6 +490,8 @@ for(h in 2:hrange){
   CM_Naive1[h]<-dm
 }
 CM_Naive1_stars <- stars.pval(CM_Naive1)
+#Replace dot by +
+CM_Naive1_stars[CM_Naive1_stars=="."]<-"+"
 
 #Nonparametric trawl versus naive
 CM_Naive2 <-1+numeric(hrange)
@@ -548,8 +550,8 @@ for(h in 1:hrange){
 }
 CM_CMsimple2_stars <- stars.pval(CM_CMsimple2)
 
-
-
+#Replace dot by +
+CM_CMsimple2_stars[CM_CMsimple2_stars=="."]<-"+"
 
 #####All error plots
 #Plot the errors with ggplot
