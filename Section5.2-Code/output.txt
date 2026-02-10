@@ -1,0 +1,4 @@
+The 0.05 percentage for ticker A is 92.24891 
+The 0.05 percentage for ticker DFS is 84.46903 
+The 0.05 percentage for ticker WAT is 98.43373 
+The 0.05 percentage for ticker WM is 86.77346 
