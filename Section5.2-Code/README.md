@@ -64,6 +64,9 @@ By default, the code runs the full analysis using all available days of data. Fo
 The script generates the following outputs for each ticker:
 
 ### Plots (EPS format)
+- `A_OnePath.eps` - Plot of the first sample path of ticker A
+- `A_Hist.eps` - Plot of the histogram of the first sample path of ticker A
+- `A_ACF.eps` - Plot of the ACF of the first sample path of ticker A
 - `{TICKER}_Ratio_Naive.eps` - MSE ratio vs naive forecast
 - `{TICKER}_Ratio_Exp.eps` - MSE ratio vs exponential trawl
 - `{TICKER}_Ratio_LM.eps` - MSE ratio vs LM trawl
@@ -81,6 +84,7 @@ The script generates the following outputs for each ticker:
 
 - `EmpiricalStudy-Final.R` - Main analysis script
 - `AdditionalRFunctions.R` - Plotting functions
+- `ExamplePlots.R` - Plots the sample path, histogram and acf of one sample path of stock A
 - `README.md` - This file
 
 ## Parameters
