@@ -2,7 +2,7 @@
 
 This repository contains R code implementing the methods described in:
 
-**O. Sauri and A. E. D. Veraart (2026).** *Nonparametric estimation of trawl processes: Theory and Applications.* arXiv:2209.05894. [https://arxiv.org/abs/2209.05894](https://arxiv.org/abs/2209.05894)
+**O. Sauri and A. E. D. Veraart (2026).** *Nonparametric estimation of trawl processes: Theory and Applications.* arXiv:2209.05894. [https://arxiv.org/abs/2209.05894](https://arxiv.org/abs/2209.05894) Accepted for publication in **Bernoulli**.
 
 ## Repository Structure
 
