@@ -80,8 +80,9 @@ If you use this code, please cite:
 @article{sauriveraart2026,
   title={Nonparametric estimation of trawl processes: Theory and Applications},
   author={Sauri, Orimar and Veraart, Almut E. D.},
-  journal={arXiv preprint arXiv:2209.05894},
-  year={2026}
+  journal={Bernoulli},
+  year={2026},
+  note={Accepted for publication}
 }
 ```
 
